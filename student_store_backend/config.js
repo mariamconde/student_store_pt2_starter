@@ -34,4 +34,5 @@ module.exports = {
   IS_TESTING,
   BCRYPT_WORK_FACTOR,
   getDatabaseUri,
+  SECRET_KEY
 }
