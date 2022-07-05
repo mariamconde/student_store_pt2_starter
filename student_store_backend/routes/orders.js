@@ -1,8 +1,9 @@
 const express = require("express")
 const Order = require("../models/order")
+const security = require("../middleware/security")
 const router = express.Router()
 
-router.get("/", async (req, res, next) => {
+router.get("/", security.requireAuthenticatedUser, async (req, res, next) => {
   try {
     const user = res.locals.user
     const orders = await Order.listOrdersForUser(user)
@@ -12,7 +13,7 @@ router.get("/", async (req, res, next) => {
   }
 })
 
-router.post("/", async (req, res, next) => {
+router.post("/", security.requireAuthenticatedUser, async (req, res, next) => {
   try {
     const user = res.locals.user
     const order = await Order.createOrder({ order: req.body.order, user })
