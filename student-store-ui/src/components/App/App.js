@@ -9,6 +9,7 @@ import NotFound from "../NotFound/NotFound"
 import ShoppingCart from "../ShoppingCart/ShoppingCart"
 import { removeFromCart, addToCart, getQuantityOfItemInCart, getTotalItemsInCart } from "../../utils/cart"
 import "./App.css"
+import apiClient from "../../services/apiClient"
 
 export default function App() {
   const [activeCategory, setActiveCategory] = useState("All Categories")
@@ -30,16 +31,31 @@ export default function App() {
     setSearchInputValue(event.target.value)
   }
 
+  useEffect(() => {
+    const fetchUser = async () => {
+      const {data, error} = await apiClient.fetchUserFromToken()
+      if (data) setUser (data.user)
+      if (error) setError(error)
+    }
+  
+  
+    const token = localStorage.getItem("student_store_token")
+    if(token) {
+      apiClient.setToken(token)
+      fetchUser()
+    }
+  }, [])
+
   const handleOnCheckout = async () => {
     setIsCheckingOut(true)
 
     try {
-      const res = await axios.post("http://localhost:3001/orders", { order: cart })
-      if (res?.data?.order) {
-        setOrders((o) => [...res.data.order, ...o])
+      const {data, error} = await apiClient.createOrder({ order: cart })
+      if (data?.order) {
+        setOrders((o) => [...data.order, ...o])
         setIsCheckingOut(false)
         setCart({})
-        return res.data.order
+        return data.order
       } else {
         setError("Error checking out.")
       }
@@ -57,9 +73,9 @@ export default function App() {
       setIsFetching(true)
 
       try {
-        const res = await axios.get("http://localhost:3001/store")
-        if (res?.data?.products) {
-          setProducts(res.data.products)
+        const res = await apiClient.listProducts()
+        if (data?.products) {
+          setProducts(data.products)
         } else {
           setError("Error fetching products.")
         }
